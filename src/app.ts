@@ -4,92 +4,97 @@ class Task {
     description: string;
     completed: boolean;
 
-    constructor(id: number, title: string, description: string, completed: boolean){
+    constructor(id: number, title: string, description: string){
         this.id = id;
         this.title = title;
         this.description = description;
-        this.completed = completed;
-    }
-
-    //Adds a task to the task list
-    addTask(): void {
-        let newTask = new Task(this.id, this.title, this.description, this.completed);
-        allTasks.push(newTask);
-    }
-    
-    //Returns a task by its ID
-    getTaskById(id: number): Task | undefined {
-        return new Task(1, 'sd', 'sdsd', true);
-    } 
-    
-    //Marks a task as complete
-    markTaskComplete(id: number): void{
-
-    } 
-
-    //Lists all tasks¥
-    listAllTasks(): void {
-
+        this.completed = false;
     }
 }
 
 class TaskManager {
-    task: Task;
+    tasks: Task[];
 
-    constructor(task: Task){
-        this.task = task;
+    constructor(){
+        this.tasks = [];
     }
 
     //Adds a task to the task list
     addTask(task: Task): void {
-        let newTask = new Task(task.id, task.title, task.description, task.completed);
-        allTasks.push(newTask);
+        let newTask = new Task(task.id, task.title, task.description);
+        this.tasks.push(newTask);
     }
     
     //Returns a task by its ID
     getTaskById(id: number): Task | undefined {
-        return new Task(1, 'sd', 'sdsd', true);
+        return this.tasks.find(task => task.id === id);
     } 
     
     //Marks a task as complete
     markTaskComplete(id: number): void{
-
-    } 
-
-    //Lists all tasks¥
-    listAllTasks(): void {
-
-    }
+        const task = this.getTaskById(id);
+        if (task) {
+            task.completed = !task.completed;
+    }  
 }
 
+    //Lists all tasks
+    listAllTasks(): void {
+        console.log("All Tasks:");
+        this.tasks.forEach(task => {
+            console.log(`ID: ${task.id}, Title: ${task.title}, Description: ${task.description}, Completed: ${task.completed ? 'Yes' : 'No'}`);
+        });
+    }
 
+
+    //Delete Task
+    deleteTask(id:number): void {
+        console.log('id=', id)
+        const task = this.getTaskById(id);
+        this.tasks = this.tasks.filter(task => task.id !== id);        
+    }
+    
+}
+
+const taskManager = new TaskManager();
 const randomInt = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-
-let allTasks: Task[] = [];
-console.log('empty task', allTasks);
 const titleTask = (document.getElementById('inputTitleTask') as HTMLInputElement);
 const descriptionTask = (document.getElementById('inputDescTask') as HTMLInputElement);
-const taskList = (document.getElementById('taskList') as HTMLInputElement);
 
-const addBtn = document.getElementById('addBtn');
-addBtn?.addEventListener('click', ev => {
+let ul = document.createElement("ul")
+    document.body.appendChild(ul);
+
+
+function clickAddBtn():void {
     let taskId = randomInt(1, 1000);
-    let newTask = new Task(taskId, titleTask.value, descriptionTask.value, false);
-    newTask.addTask();
-    console.log('all tasks', allTasks);
+    let newTask = new Task(taskId, titleTask.value, descriptionTask.value);
+    taskManager.addTask(newTask);
+    displayTask(newTask);
+    titleTask.value = "";
+    descriptionTask.value = "";
+}
+
+function displayTask(task: Task): void {
     const li = document.createElement("li");
-    const checkbox = document.createElement("input");
-    checkbox.type = 'checkbox';
-    li.textContent = newTask.title + " " + newTask.description;
-    const delbtn = document.createElement("button");
-    
-    delbtn.textContent = 'Delete task';
-    taskList.appendChild(checkbox);
-    taskList.appendChild(li);
-    taskList.appendChild(delbtn);
-   
-    
-});
+    li.innerHTML = `<input type="checkbox" onclick="checkboxChecked(${task.id})" id="checkbox${task.id}" ${task.completed ? "checked" : ""}>  <label>${task.title}</label> <input type="button" onclick="delTask(${task.id})" value="Delete">`
+    li.id = `li${task.id}`;
+    ul.appendChild(li);
+    taskManager.listAllTasks();
+}
+
+function delTask(id: number): void{
+    taskManager.deleteTask(id);
+    document.getElementById(`li${id}`)?.remove();
+    taskManager.listAllTasks();
+}
+
+function checkboxChecked(id: number): void{
+    taskManager.markTaskComplete(id);
+    taskManager.listAllTasks();
+}
+
+
+
 
